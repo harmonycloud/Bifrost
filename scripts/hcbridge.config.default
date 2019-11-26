@@ -1,0 +1,20 @@
+{
+    "cniVersion": "0.3.0",
+    "name": "mynet",
+    "plugins": [
+        {
+            "type": "hcbridge",
+             "bridge": "br0",
+             "ipam": {
+                "type": "hcipam",
+                "log_path": "/var/log/hcipam.log",
+                "log_level": "DEBUG",
+                "etcd_endpoints": "__ETCD_ENDPOINTS__",
+                "etcd_key_file": "__ETCD_KEY_FILE__",
+                "etcd_cert_file": "__ETCD_CERT_FILE__",
+                "etcd_ca_cert_file": "__ETCD_CA_CERT_FILE__"
+             }
+
+        }
+    ]
+}

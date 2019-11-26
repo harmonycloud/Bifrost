@@ -1,0 +1,195 @@
+#hcbridge
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: hcbridge-config
+  namespace: kube-system
+data:
+  # The location of your etcd cluster.  This uses the Service clusterIP
+  # defined below.
+  etcd_endpoints: "http://10.10.103.60:2379"
+  cronjob: "*/2 * * * *"
+
+---
+
+# The following contains k8s Secrets for use with a TLS enabled etcd cluster.
+# For information on populating Secrets, see http://kubernetes.io/docs/user-guide/secrets/
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: hcbridge-etcd-secrets
+  namespace: kube-system
+data:
+  # Populate the following files with etcd TLS configuration if desired, but leave blank if
+  # not using TLS for etcd.
+  # This self-hosted install expects three files with the following names.  The values
+  # should be base64 encoded strings of the entire contents of each file.
+  etcd-key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBclRaY1JUUUZycmh0RGJMMUY2VHg1d241M3dzenlFYVNjcWxGK1IvcHdSc0dUTTZZCmc1VDFrOGsxVW9oekJFSTZCaXJaSmE3QmxqTjFzRDZRUTlKMUo2bFV0ang0KzM0dlRlTGNYamxoY2pDQVloWGYKOG1ZT042VTd0UVRjbE9ZRFMveTczdTdqcjlQSkxQMXJoSkFiTUVCMDhqMTUvbWxJaUlkMjc3ZVNGY2U2c05KUQptQzZ6cnYydXM1cC9WZ0J3dStFL1JuSjZXVHVJbWRmYlZHNGFJY1Y1Sno4ZVVDa2ZtMkFMUWJGQmpEaUZkUnNpCnJXcGozMFI2dkZGTXdJZDY2enNXK00ycG5ueFZvazFSV3VvNWVneU9WSnBaL1JINDhQL2ZpTVZWYUtILzZxdWcKUVB2LzdnUTF3Y2k1dzU1OHI0cVpLZzh2UHRwV0QrcStYUU9DTFFJREFRQUJBb0lCQUUzVk5JY2dSa0ZwdkE5QQowQ05zeWdxQWtCaHF4ejBDZ1VJbTBEdU8zSklhVzYxZDFHaWtJZW5qcXlOSUR5N2x0MzhYOS9XWDNvTm80a1J0CkNKU0JXSVdXOEdybko1SVM5Snl5Q1VZSjBNRG9ESGlHemRmMWhnUDVLcWcvNUFMQWpOQ3pZNVJja2xGckFHWkkKQmUxT2Qva3ByYU5BZnJZVWh6UmFjdFpyRGFqZEZxN3B1ZE1ZR2pRNTM1VU5hZDk1VHFjTlN0dDFwN3N4aVl4bgpuVjlrMlZkSnEyZmxVSFBSV3pTQlNRVlpFdVZ1Ym1FVlc3dFg3ZEtEV0lwbXR3OFRpSE93MGlzcGNCbWYwdDArCng1c2R1UFlyZDBnRE5UbUwrbDJrL2ZkM0t5a1VnU2tGMjYxOUtDbUtKMmdYZlJKUTFMcTlpRjNyUXI3d2Nwd2kKUnFGTGtmMENnWUVBekJsTzhROGUveG5wdmJxNElhdmZUUG1Kb21uMU01a0Fnb2NhTEdSbGtYamM1ekNiaXNiMQpUR3B5TjVmODFzbE5sanJrQWx1SVZjcE5uNDNtQ0NVL1k2OGJ6SzM2ZDB0WEpiMEkvb2dYNmZHYjVnYytEaWRBCkdHV281Wkc1UDRBZExQWDBxRWlFZmhubDM0eHJXdmQrSm1IRXdPQmEzL1hYcDliMFVRR1RKa01DZ1lFQTJVSmMKbXM1SXgvQlQzTkJVMm0ra00rOEdVMGt6RWtGV0tsM3hVQitBL0h2c0VVSThWZFQ0NVJ2TS8xdHFNYkk1Yk5ocgo0cmxRc3JCSDBuL005TFBPM3YwK1VSVG4zL3YwaHpVWkJtZUE3MVFhd2c0czg3NFlTb2hXYWkzTm52ZnpxcFRBCnFmY2U3Ky9MVSt1Sk9aeEZzTWFJbkVqeFRYdm9BWFB2MXdZMkJzOENnWUI3ZlZDalVCZmNGK3l5VEZoK253UjAKQ1lQNlRndjdWVGJXd3pIVjdFVDhHTm5uMUNRNGVwc095bFVqU0FYR1czUmpVbXlFOUtidjZZQy82bFpsVlV3ZQpYMlA5bXNLeURWYkVVYlV3ZEYycndmRW00L2pyRFZxZHFGemgwaUw0eGVaaFBzdnlTalpJS2hsSkFpZ3VtUkt0CjNIZjBqNHJNZVc0cmNrYlBBSm50Q3dLQmdBZTNxOEowQVhIWXY2SGdaS005dy85MFJpMC9OR2s1bU8zNFdGSVkKVEdTcm9qOGFzem41VHI0VXRydDdhOUpJR25JYlhmbTN5MzROZFArdE9vS1d3SXA3UkhOczRxKzZLMzJDRFZtRQo0N2VjclRhbmVrRk9SMTZlYVROc1hSbUFoVTlSNldZZ09TRWN5NFEzb2JCQ05OZUt0ZCtYVjdzQTQ4VHBjV09aCi9PRlJBb0dBV1Bmc0VvMnU2VVAyWjZLdlVRamZkTHdVajRxRUI4dHdSNW5FQ2lkSTY5LzREM2VoTjUxSmZQNHgKeDM5MDRRRzJpWWZQZktaRU84YXBNSU9USDFHdG9WbGRhY3dtVUtzUnZidzBya1B6TTdXcGs0S0Y5OVdVZFBBagppdnVkM1kxQ0tkNDNuY1pjOXVxakZtSXErSWxtVzJWYXJPUlNWZk92QUZGWmJxdU9LWkk9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+  etcd-cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQvRENDQWVTZ0F3SUJBZ0lJUHh6ZGQrNWdmUzB3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXd3S2EzVmlaWEp1WlhSbGN6QWVGdzB4T0RFeU1qVXhNakV4TVRkYUZ3MHhPVEV5TWpVeE1qRTBOVEZhTUQ0eApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1TTXdJUVlEVlFRREV4cHJkV0psTFdGd2FYTmxjblpsCmNpMWxkR05rTFdOc2FXVnVkRENDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFEZ2dFUEFEQ0NBUW9DZ2dFQkFLMDIKWEVVMEJhNjRiUTJ5OVJlazhlY0orZDhMTThoR2tuS3BSZmtmNmNFYkJrek9tSU9VOVpQSk5WS0ljd1JDT2dZcQoyU1d1d1pZemRiQStrRVBTZFNlcFZMWThlUHQrTDAzaTNGNDVZWEl3Z0dJVjMvSm1EamVsTzdVRTNKVG1BMHY4CnU5N3U0Ni9UeVN6OWE0U1FHekJBZFBJOWVmNXBTSWlIZHUrM2toWEh1ckRTVUpndXM2Nzlyck9hZjFZQWNMdmgKUDBaeWVsazdpSm5YMjFSdUdpSEZlU2MvSGxBcEg1dGdDMEd4UVl3NGhYVWJJcTFxWTk5RWVyeFJUTUNIZXVzNwpGdmpOcVo1OFZhSk5VVnJxT1hvTWpsU2FXZjBSK1BELzM0akZWV2loLytxcm9FRDcvKzRFTmNISXVjT2VmSytLCm1Tb1BMejdhVmcvcXZsMERnaTBDQXdFQUFhTW5NQ1V3RGdZRFZSMFBBUUgvQkFRREFnV2dNQk1HQTFVZEpRUU0KTUFvR0NDc0dBUVVGQndNQ01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQ0FRQXJ4MGpBMmJlVG1VOWxDcVhjb2RWbgo0cytzVFQyOFBQZjdtSGVZNlR1Ti9yeUpRV3k4cGUySmV3UVZ3dVlVSUh3VUxsWTJoN3FqdkxWR20zdUIweVhZCmcrU25LTDZ3cXBESEdWU1J1ZWFwRDlKb0ZRNmdTT0x5aG50c3RDanpnNW01ZWhIL3RCeXZHMlhIdnNHNzZTR2sKZHJueERkWHhFbGl3THZ1VWovUTBZRWwwN3UwSi82b2UrNjhWblhrb0cycHBNU1Y4ckowOUh0ekJZQ3dFMVRHMgppY2FnZFl2Y0ZuLzI2dHlHZ1N0N1FtNld6VFdZVnl6b3ozOXJUc2g5MFlXUEpKblBhOGcrZHZ0Q2trUnRzQnBPCnRPbXVXdVVVQ01CNHYySDRsTnhFQ21obDZuRFBJbXUrT2JxSTJUeXFnd2MyMWcwYUVoSTZVdmVraXR3b2drV08KTnF1eVRCL1FJeHhSM3Jpc3N6UUptL1dtajRmUjRzb2NETXBkeERORVFTOW11bzdPN0JBSGx5Y1RNN09lcnNxRApKRkxkRFFUaFhaZDdkZG8rU3BlOSt4elJ1ZklYUlVoaXh1aFI5RWZKMEw0aGJNQUpVVW1veWptM3BwNmJiWlRmCkFIbUVqQ3h4RVdjeG9ZRUQ3OGZWSjhPQVBzazZOYllMTVdEU3ovd2dHbUUwU05QNTlubW5QUGFaQkNTL1dJWXoKTTFLbkhJSERPeGJZeFZlNksrZUlYczN0UDBtTzBqNlZRVTI5NnI3RlIzVXNaQzY1Tmd0VEZUbms2T1JWNy9GdQozL1gxMzNlVDFTZkl1ZDVtTEFHTitpcHF6dG5Ndm52T3FEazc2aFIwNmFuVjhINDZsWmVrWENmY3JwU2p1NnpTCjZMelpOcDhZUTJtVHRiRTVNbEUxd2c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  etcd-ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUUwakNDQXJxZ0F3SUJBZ0lKQUxmVU41SmVzVXBaTUEwR0NTcUdTSWIzRFFFQkN3VUFNQlV4RXpBUkJnTlYKQkFNTUNtdDFZbVZ5Ym1WMFpYTXdJQmNOTVRneE1qSTFNVEl4TVRFM1doZ1BNakV4T0RFeU1ERXhNakV4TVRkYQpNQlV4RXpBUkJnTlZCQU1NQ210MVltVnlibVYwWlhNd2dnSWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUNEd0F3CmdnSUtBb0lDQVFESVFxRU9hV09Udk5TSlJOR1NrRVdEdDRHV1NzT3VSTUdXSWRJSjhIQ0J5enlUbW9TVjEwM1gKN0ZQWGZoOVZVNld4T0RlZGROOVVNRkg4ZUpQVFJzc0ZJRGJEdzMvQ1k1VlRVRlo2cVdrY1RSQkhEOEVnQjdJNgo1S2IrQXJGMmJPS25xQ2VyMEY1aTZiSDljaEp5Y2VvU1JnNEV2aXRJWnN4VmE0VjlvZ2tjM0orQ0p3UmtlUTVGClJEdzdKdjlEZ0tiQXdvR00wdzlFRnBySitIZDM1dVZRZnBCc0lPZTNEUVVnQ3hON0xqdUp4eFNjUkNlWEkrbEUKTHlnVG9tZFhENmk5TVZoVTE5K2VUeEd6dHFQdnFLMkpBODBiTTU0VitqcFVERlpaQ0E3ZVVNeFBiZ2FmS2lzcApHbVdxejg5QUdyQ28xd2NkU3ZQclV6UWNMWTlmSHlKczFSNE9DeWJhM0xBa0RZYWE5TEtlV2MwOHdJMFNLVlN5CkRISFJYSERkMW4xU3dQNEdsY0FHZFAwM2Y0dmN5a2piVHdGVFdNb1dTTW45RjV5NFp6OG5oQkw5S0UrMHpwVTUKVHoxZ2FPSVJBZEc5amZIem9jbndqWVc0ZzViRnIzMGFtU0pKTllkTXhDTWdwL1pnY00vSGxXbVJ0MFlPTWpOcQpFN0x3MmlEM2VZQ0ZlNXJueHdoREsrN0s2N0k1T1dnZVk0M1VMVjFOOVJFcVBxcm14WWw5MXMrdEJqM0Q5SGJqCmw4cUhrTmdXdkZVN291Q2dMWGtyTmNndysxb2kwUHVsdlo2L0Z0WitKNWxQekFCOThHeXZEWTNyWnlqckZKUzYKQWNxNUVrN2g0QW11eWlzemtZZkJqOTcwakR1bFFYN092anRRR1RWMVFlWUtyUlZKazN2MVV3SURBUUFCb3lNdwpJVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGCkFBT0NBZ0VBVnFkU1ZUcXd3VEVmckV1V1VWYzgxM2FOM0lQUHlEZGxjL1d4Y3U5aHV1TGpzV0hBM3pUaUgvVGcKK1NoNUs0YWhaTktGalRDNncvNTVscDlLQWg3YWJuSytFRXRMR2xUb0RCWjA5NjA5YUN0NTJKbDY2WFdDcENxQwpRWEQzd1NaVG1ub0RoWXExeWlCQUtsNTRqT2M5THdtUU9obmhiRzVNVHBlWTlPcVR3c0lQeVZFbEtmNm14RkQ4CmZLLzZTZmpqY0o2TllENGt3TjEyMUxGQ2QvSnQySDdwV281MnAyYjVyQTA3VWxsVHlHbDVuaC9haU8rbmRESkkKcVlQRGFuS21KRk0rSkV6TmJCSFd5QVhyWXRDc205emZnRGNVUm84WmtQMzlvTGZnUG53WFMrL2pWaHlJUXRobQpERjNiR1pkUnROVU9pVlZ0S0lWNm5pM2hmclJpRGZtdForYWZmNE1pbUxsalI3TURLcEZzdzI2TkpMZHU3TzJPCnNkMGczKzFOMXJWSmJOaW83dVNObllEWXBlaHltVlkvVVovU1NFdGNKNVpGbTNNanJBK1pBSEYwR2ZiNVBvUkkKcldpbUdvbWI3ZmNoV2xBb0JJZGJJVmZtbzlxb3Y5MCtCTkRoMlplV2E4RS80R3dtd2RuMU9NS0lXdWxUL29wVQpiVURwK3l1dE5oMnpXVURjOU5Hd2dsWnlBbVByRzh5alRNNkhNeklnY0xoL2VYNm1CKzJHUTZFN2xhUmhBOWlGCnZBYnB1aFZDRGo3UDhKMTF6VXVIMGpDeGNlMGsyZnMxL3VUK1ZiSWxGbnc0MzczTG95RTJyWldnN0VPV2t3bUMKek40b0FFQjF6OUdZRW5FV1h0NG1UdzFsRHdHUzN6NFZ4Y0M3ZlZNUkVta1BPcEFOSnVBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hcipam-rest-server
+  namespace: kube-system
+  labels:
+    app: hcipam-rest-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hcipam-rest-server
+  template:
+    metadata:
+      labels:
+        app: hcipam-rest-server
+    spec:
+      hostNetwork: true
+      tolerations:
+      # Make sure hcipam/restServer gets scheduled on all nodes.
+      - effect: NoSchedule
+        operator: Exists
+      containers:
+        - name: rest-server
+          image: harmonycloud/network-controller:v0.1
+          imagePullPolicy: Always
+          env:
+            # The location of the k8s etcd cluster.
+            - name: ETCD_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: hcbridge-config
+                  key: etcd_endpoints
+            - name: cronjob
+              valueFrom:
+                configMapKeyRef:
+                  name: hcbridge-config
+                  key: cronjob
+          ports:
+            - containerPort: 38080
+          volumeMounts:
+            - mountPath: /etcd-secrets
+              name: sslkey
+      volumes:
+        # Used to install CNI.
+        - name: sslkey
+          secret:
+            secretName: hcbridge-etcd-secrets
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hcipam-rest-server
+  namespace: kube-system
+  labels:
+    name: hcipam-rest-server
+spec:
+  type: NodePort
+  ports:
+    - port: 38080
+      nodePort: 32222
+  selector:
+    app: hcipam-rest-server
+
+---
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: hcbridge-node
+  namespace: kube-system
+  labels:
+    k8s-app: hcbridge-node
+spec:
+  selector:
+    matchLabels:
+      k8s-app: hcbridge-node
+  template:
+    metadata:
+      labels:
+        k8s-app: hcbridge-node
+    spec:
+      hostNetwork: true
+      tolerations:
+        # Make sure hcbridge/node gets scheduled on all nodes.
+        - effect: NoSchedule
+          operator: Exists
+      serviceAccountName: hcbridge
+      containers:
+        # This container installs the hcbridge binaries
+        # and CNI network config file on each node.
+        - name: install-cni
+          image: harmonycloud/hcbridge:v0.1
+          imagePullPolicy: Always
+          command: ["sh"]
+          args: ["install-cni.sh"]
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
+            - mountPath: /etcd-secrets
+              name: sslkey
+          env:
+          # The location of the k8s etcd cluster.
+          - name: ETCD_ENDPOINTS
+            valueFrom:
+              configMapKeyRef:
+                name: hcbridge-config
+                key: etcd_endpoints
+
+      volumes:
+        # Used to install CNI.
+        - name: cni-bin-dir
+          hostPath:
+            path: /opt/cni/bin
+        - name: cni-net-dir
+          hostPath:
+            path: /etc/cni/net.d
+        - name: sslkey
+          secret:
+            secretName: hcbridge-etcd-secrets
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: hcbridge-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hcbridge-role
+subjects:
+  - kind: ServiceAccount
+    name: hcbridge
+    namespace: kube-system
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: hcbridge-role
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hcbridge
+  namespace: kube-system
