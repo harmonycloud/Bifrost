@@ -136,6 +136,9 @@ func GetIPPool(w rest.ResponseWriter, r *rest.Request) {
 
 	etcdclient, err := etcdcli.Init(ipamConf)
 	defer etcdcli.Close()
+	if err != nil {
+		log.Rest.Fatal(err)
+	}
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	existPool := ippClient.GetIPPoolByName(namespace, poolName)
 	err = w.WriteJson(existPool)
@@ -260,6 +263,9 @@ func DeleteIPPool(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		err = w.WriteJson(&pool)
+		if err != nil {
+			log.Rest.Fatal(err)
+		}
 		return
 	}
 	rest.Error(w, fmt.Sprintf("can not delete ippool %s", pool.Name), 400)
