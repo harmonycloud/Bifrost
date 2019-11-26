@@ -34,7 +34,7 @@ type Net struct {
 
 // IPAMConfig represents the IP related network configuration.
 // This nests NSIPPool because we initially only supported a single
-// range directly, and wish to preserve backwards compatability
+// range directly, and wish to preserve backwards compatibility
 type IPAMConfig struct {
 	Name           string
 	Type           string `json:"type"`
