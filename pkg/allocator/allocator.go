@@ -15,7 +15,6 @@
 package allocator
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/containernetworking/cni/pkg/types/current"
@@ -69,7 +68,7 @@ func (alloc *IPAllocator) AllocateIP(fixed bool, nameSpace, serviceIPPoolName, p
 func (alloc *IPAllocator) Release(nameSpace, podName string, releaseFixed bool) error {
 	e := alloc.etcdClient
 
-	response, err := concurrency.NewSTMRepeatable(context.TODO(), e, func(s concurrency.STM) error {
+	response, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
 		podNetworkKey := fmt.Sprintf(types.PodKey, nameSpace, podName)
 		podNetworkStr := s.Get(podNetworkKey)
 		if podNetworkStr == "" {
@@ -161,7 +160,7 @@ func (alloc *IPAllocator) getServiceSpecIP(fixed bool, nameSpace, servicePoolNam
 
 	var hcPool *types.NSIPPool
 	var result *net.IP
-	response, err := concurrency.NewSTMRepeatable(context.TODO(), e, func(s concurrency.STM) error {
+	response, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
 		podIPKey := fmt.Sprintf(types.PodKey, nameSpace, podName)
 		podInfoStr := s.Get(podIPKey)
 		if !fixed && podInfoStr != "" {
