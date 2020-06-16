@@ -1,7 +1,6 @@
 package ippool
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/containernetworking/plugins/pkg/ip"
@@ -114,7 +113,7 @@ func (client *IPPoolClient) GetAllPool() []*hcipamTypes.NSIPPool {
 // Delete removes the given ns IPPool's record in etcd
 func (client *IPPoolClient) Delete(pool *hcipamTypes.NSIPPool) error {
 	e := client.Cli
-	_, err := concurrency.NewSTMRepeatable(context.TODO(), e, func(s concurrency.STM) error {
+	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
 		hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, pool.Namespace, pool.Name)
 		s.Del(hcPoolKey)
 		return nil
@@ -129,7 +128,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 	var errMsg string
 	e := client.Cli
 
-	_, err := concurrency.NewSTMRepeatable(context.TODO(), e, func(s concurrency.STM) error {
+	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
 		hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, serviceIPPool.Namespace, serviceIPPool.NSIPPoolName)
 		hcPoolStr := s.Get(hcPoolKey)
 		nsPool := &hcipamTypes.NSIPPool{}
@@ -211,7 +210,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 // DeleteServiceIPPool removes the given service IPPool's record in etcd by it's name and namespace
 func (client *IPPoolClient) DeleteServiceIPPool(namespace string, servicePoolName string) error {
 	e := client.Cli
-	_, err := concurrency.NewSTMRepeatable(context.TODO(), e, func(s concurrency.STM) error {
+	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
 		servicePoolKey := fmt.Sprintf(hcipamTypes.ServiccePoolKey, namespace, servicePoolName)
 		svcPoolStr := s.Get(servicePoolKey)
 		serviceIPPool := &hcipamTypes.ServiceIPPool{}

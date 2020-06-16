@@ -24,8 +24,6 @@ Kube-bridge is an open source solution enabling L2 network for kubernetes. The n
 - **network-controller** - Component providing IP pool configuration [restful APIs](docs/APIOverview.md) and listening for kubernetes APIServer events to retrieve abnormal IPs.
 - **HA Daemon** - Component  monitoring bonding NICs' switch on the host in high availability network environment and making physic network devices aware of the NIC's switch. 
 
-## **Config introduction**
-
 ## **Getting started** 
 
  [Getting started](docs/GettingStarted.md)

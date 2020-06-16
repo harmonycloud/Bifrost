@@ -9,7 +9,7 @@
       
 ### Create L2 Bridge 
 ```shell
-nohup sh build_br0 eth0 
+nohup sh scripts/build_br0 eth0 
 ```
 
 *notice:* The VLAN parameter configures the VLAN tag on the host end of the veth and also enables the vlan_filtering feature on the bridge interface.
@@ -17,7 +17,7 @@ nohup sh build_br0 eth0
 
 We install HC-bridge as a Docker Container on every node
 ```bash
-nohup sh install.sh https://etcd_host:2379
+nohup sh yaml/install.sh https://etcd_host:2379
 ```
 
 ### Network configuration reference
