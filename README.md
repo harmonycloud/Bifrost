@@ -1,7 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/harmonycloud/hcbridge)](https://goreportcard.com/report/github.com/harmonycloud/hcbridge)
 # **Bifrost**
 ![alt text](docs/logo.svg "Kube-bridge log")
-Kube-bridge is an open source solution enabling L2 network for kubernetes. The network traffic in HC-bridge can be managed and monitored by traditional devices.
+Bifrost is an open source solution enabling L2 network for kubernetes. The network traffic in HC-bridge can be managed and monitored by traditional devices.
 
 ## **Overview**
 ![alt text](docs/network-topology.png "network-topology")
@@ -17,7 +17,7 @@ network-topology.png
 - **VLAN support**
 
 ## **Components**
-![alt text](docs/componetns.png "Kube-bridge components")
+![alt text](docs/componetns.png "Bifrost components")
 
 - **Bifrost cni** - CNI plugin responsible for creating and configuring linux bridge on the host.
 - **Bifrost ipam** - Component responsible for IP address assignment, using ETCD for storage. 
