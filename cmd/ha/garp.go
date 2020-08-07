@@ -7,31 +7,140 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"os"
-	"os/signal"
+	"strings"
 	"syscall"
+	"unsafe"
 )
 
 func main() {
-	sigs := make(chan os.Signal, 1)
-	//done := make(chan bool, 1)
-	signal.Notify(
-		sigs,
-		syscall.SIGUSR1,
-	)
+	GetNotifyArp("bond0")
+	//sigs := make(chan os.Signal, 1)
+	////done := make(chan bool, 1)
+	//signal.Notify(
+	//	sigs,
+	//	syscall.SIGUSR1,
+	//	syscall.Signal(syscall.RTM_F_NOTIFY),
+	//)
+	//for {
+	//	sig := <-sigs
+	//	go func() {
+	//		fmt.Println("sig:", sig)
+	//		listen()
+	//	}()
+	//}
+}
+
+func GetNotifyArp(bond string) {
+	l, _ := ListenNetlink()
+
 	for {
-		sig := <-sigs
-		go func() {
-			fmt.Println("sig:", sig)
-			listen()
-		}()
+		msgs, err := l.ReadMsgs()
+		if err != nil {
+			fmt.Printf("Could not read netlink: %s", err)
+		}
+	loop:
+		for _, m := range msgs {
+			switch m.Header.Type {
+			case syscall.NLMSG_DONE, syscall.NLMSG_ERROR:
+				break loop
+			case syscall.RTM_NEWLINK, syscall.RTM_DELLINK: // 网卡变化
+				res, err := PrintLinkMsg(&m)
+				if err != nil {
+					fmt.Printf("Could not find netlink %s\n", err)
+				} else {
+					ethInfo := strings.Fields(res)
+					if ethInfo[2] == bond && ethInfo[1] == "up" {
+						listen()
+					}
+				}
+			}
+
+		}
 	}
+}
+
+type NetlinkListener struct {
+	fd int
+	sa *syscall.SockaddrNetlink
+}
+
+func ListenNetlink() (*NetlinkListener, error) { // Listen netlink
+	groups := syscall.RTNLGRP_LINK
+	//|
+	//syscall.RTNLGRP_IPV4_IFADDR |
+	//syscall.RTNLGRP_IPV4_ROUTE |
+	//syscall.RTNLGRP_IPV6_IFADDR |
+	//syscall.RTNLGRP_IPV6_ROUTE
+
+	s, err := syscall.Socket(syscall.AF_NETLINK, syscall.SOCK_DGRAM,
+		syscall.NETLINK_ROUTE)
+	if err != nil {
+		return nil, fmt.Errorf("socket: %s", err)
+	}
+
+	saddr := &syscall.SockaddrNetlink{
+		Family: syscall.AF_NETLINK,
+		Pid:    uint32(0),
+		Groups: uint32(groups),
+	}
+
+	err = syscall.Bind(s, saddr)
+	if err != nil {
+		return nil, fmt.Errorf("bind: %s", err)
+	}
+
+	return &NetlinkListener{fd: s, sa: saddr}, nil
+}
+
+func (l *NetlinkListener) ReadMsgs() ([]syscall.NetlinkMessage, error) { // read netlink message
+	defer func() {
+		recover()
+	}()
+
+	pkt := make([]byte, 2048)
+
+	n, err := syscall.Read(l.fd, pkt)
+	if err != nil {
+		return nil, fmt.Errorf("read: %s", err)
+	}
+
+	msgs, err := syscall.ParseNetlinkMessage(pkt[:n])
+	if err != nil {
+		return nil, fmt.Errorf("parse: %s", err)
+	}
+
+	return msgs, nil
+}
+
+func PrintLinkMsg(msg *syscall.NetlinkMessage) (string, error) { // when netlink changed, function can listen the message and notify user
+	defer func() {
+		recover()
+	}()
+
+	var str, res string
+	ifim := (*syscall.IfInfomsg)(unsafe.Pointer(&msg.Data[0]))
+	eth, err := net.InterfaceByIndex(int(ifim.Index))
+	if err != nil {
+		return "", fmt.Errorf("LinkDev %d: %s", int(ifim.Index), err)
+	}
+	if eth.Flags&syscall.IFF_UP == 1 {
+		str = "up"
+	} else {
+		str = "down"
+	}
+	if msg.Header.Type == syscall.RTM_NEWLINK {
+		res = "NEWLINK: " + str + " " + eth.Name
+	} else {
+		res = "DELLINK: " + eth.Name
+	}
+
+	return res, nil
 }
 
 const dockerNetns = "/var/run/docker/netns/"
 const eth0 = "eth0"
 
-func listen() {
+func listen() { // Let all of dockerNetns_Dev send Gratuitous ARP
 	netnsList, err := ioutil.ReadDir(dockerNetns)
 	if err != nil {
 		log.Println(err)
