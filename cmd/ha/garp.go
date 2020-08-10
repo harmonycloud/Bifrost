@@ -43,7 +43,7 @@ func GetNotifyArp(bond string) {
 			switch m.Header.Type {
 			case syscall.NLMSG_DONE, syscall.NLMSG_ERROR:
 				break loop
-			case syscall.RTM_NEWLINK, syscall.RTM_DELLINK: // 网卡变化
+			case syscall.RTM_NEWLINK, syscall.RTM_DELLINK: // get netlink message
 				res, err := PrintLinkMsg(&m)
 				if err != nil {
 					fmt.Printf("Could not find netlink %s\n", err)
