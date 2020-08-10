@@ -7,7 +7,6 @@ Bifrost is an open source solution enabling L2 network for kubernetes. The netwo
 ![alt text](docs/network-topology.png "network-topology")
 
 ## **Features**
-network-topology.png
 - **L2 network for kubernetes**
 - **Flexible IP address management** 
   - Two layer IP pools - namespace IP pool and service IP pool.
