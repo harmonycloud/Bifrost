@@ -36,7 +36,7 @@ func GetNotifyArp(bond string) {
 	for {
 		msgs, err := l.ReadMsgs()
 		if err != nil {
-			fmt.Printf("Could not read netlink: %s", err)
+			fmt.Printf("Could not read netlink:\n %s", err) // can't find this netlink
 		}
 	loop:
 		for _, m := range msgs {
