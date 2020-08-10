@@ -34,7 +34,7 @@ import (
 	"github.com/containernetworking/plugins/pkg/ipam"
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containernetworking/plugins/pkg/utils"
-	"github.com/harmonycloud/hcbridge/pkg/cniextend"
+	"github.com/harmonycloud/bifrost/pkg/cniextend"
 )
 
 // For testcases to force an error after IPAM has been performed
