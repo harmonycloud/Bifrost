@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/harmonycloud/hcbridge/pkg/etcdcli"
-	"github.com/harmonycloud/hcbridge/pkg/ippool"
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/ippool"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"log"
 	"net"
 	"net/http"

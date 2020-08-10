@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"github.com/containernetworking/cni/pkg/types/current"
 	"github.com/containernetworking/plugins/pkg/ip"
-	"github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3/concurrency"
 	"net"
 	"time"
 )

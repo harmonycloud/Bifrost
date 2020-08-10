@@ -2,7 +2,7 @@ package vlan
 
 import (
 	"fmt"
-	"github.com/harmonycloud/hcbridge/pkg/conf"
+	"github.com/harmonycloud/bifrost/pkg/conf"
 
 	"github.com/containernetworking/plugins/pkg/ip"
 	"github.com/vishvananda/netlink"

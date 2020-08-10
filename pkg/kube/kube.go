@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/containernetworking/cni/pkg/types"
-	"github.com/harmonycloud/hcbridge/pkg/log"
+	"github.com/harmonycloud/bifrost/pkg/log"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"

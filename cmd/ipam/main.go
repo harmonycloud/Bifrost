@@ -17,19 +17,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/harmonycloud/hcbridge/pkg/allocator"
-	"github.com/harmonycloud/hcbridge/pkg/cniextend"
-	"github.com/harmonycloud/hcbridge/pkg/etcdcli"
-	"github.com/harmonycloud/hcbridge/pkg/kube"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	hcipamtypes "github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/allocator"
+	"github.com/harmonycloud/bifrost/pkg/cniextend"
+	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/kube"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	hcipamtypes "github.com/harmonycloud/bifrost/pkg/types"
 
 	"github.com/containernetworking/cni/pkg/skel"
 	"github.com/containernetworking/cni/pkg/types"
+	"github.com/containernetworking/cni/pkg/types/current"
 	"github.com/containernetworking/cni/pkg/version"
 	"net"
-
-	"github.com/containernetworking/cni/pkg/types/current"
 )
 
 func main() {

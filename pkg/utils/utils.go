@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"net"
 	"strconv"
 	"strings"

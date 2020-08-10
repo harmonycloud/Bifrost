@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/containernetworking/plugins/pkg/ip"
-	"github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/harmonycloud/hcbridge/pkg/etcdcli"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	hcipamTypes "github.com/harmonycloud/hcbridge/pkg/types"
-	"github.com/harmonycloud/hcbridge/pkg/utils"
+	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	hcipamTypes "github.com/harmonycloud/bifrost/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/utils"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3/concurrency"
 )
 
 // IPPoolClient controls all IPPools' creation and deletion in etcd

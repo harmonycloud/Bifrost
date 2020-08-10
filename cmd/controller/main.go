@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 
-	"github.com/harmonycloud/hcbridge/pkg/controller"
-	"github.com/harmonycloud/hcbridge/pkg/etcdcli"
-	"github.com/harmonycloud/hcbridge/pkg/ippool"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/controller"
+	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/ippool"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	gorest "k8s.io/client-go/rest"
 

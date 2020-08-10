@@ -3,10 +3,10 @@ package etcdcli
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/pkg/transport"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/pkg/transport"
 	"strings"
 	"time"
 )

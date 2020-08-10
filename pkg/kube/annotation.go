@@ -2,8 +2,8 @@ package kube
 
 import (
 	"fmt"
-	"github.com/harmonycloud/hcbridge/pkg/log"
-	"github.com/harmonycloud/hcbridge/pkg/types"
+	"github.com/harmonycloud/bifrost/pkg/log"
+	"github.com/harmonycloud/bifrost/pkg/types"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
