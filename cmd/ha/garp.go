@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	GetNotifyArp("bond0")
+	GetNotifyArp("bond0") // test
 	//sigs := make(chan os.Signal, 1)
 	////done := make(chan bool, 1)
 	//signal.Notify(
