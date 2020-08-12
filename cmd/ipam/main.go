@@ -80,7 +80,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 	}
 	log.CmdAdd.Debugf("kube is %v", annoMap)
 
-	serviceIPPoolName := annoMap[hcipamtypes.ServiceIPPoolAnno]
+	serviceIPPoolName := annoMap[hcipamtypes.SERVICE_IP_POOL]
 
 	ipAllocator := allocator.NewIPAllocator(etcdclient)
 	var ipConf *current.IPConfig
@@ -95,9 +95,15 @@ func cmdAdd(args *skel.CmdArgs) error {
 		if err != nil {
 			return err
 		}
+	} else if annoMap[hcipamtypes.POD_IP_POOL] != "" {
+		ipConf, hcIPPool, err = ipAllocator.GetIPWithoutSvcPoolPolicy(nameSpace, annoMap[hcipamtypes.POD_IP_POOL], podName)
+		if err != nil || ipConf == nil {
+			log.CmdAdd.Errorf("allocate ip err %s !!!", err)
+			return fmt.Errorf("allocate ip err %s !!!", err)
+		}
 	} else {
-		log.CmdAdd.Errorf("kube serviceIPPoolName required")
-		return fmt.Errorf("kube serviceIPPoolName required")
+		log.CmdAdd.Errorf("kube serviceIPPoolName required!!!")
+		return fmt.Errorf("kube serviceIPPoolName required!!!")
 	}
 
 	result.IPs = append(result.IPs, ipConf)
@@ -105,7 +111,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 	defaultDst := net.IPNet{IP: net.IPv4(0, 0, 0, 0), Mask: net.IPv4Mask(0, 0, 0, 0)}
 	defaultRoute := &types.Route{Dst: defaultDst, GW: hcIPPool.Gateway}
 	result.Routes = append(result.Routes, defaultRoute)
-	result.VlanNum = hcIPPool.VlanID
+	result.VlanNum = hcIPPool.VlanId
 	log.CmdAdd.Debugf("Result:\n %v", result)
 	return result.Print()
 }

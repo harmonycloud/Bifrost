@@ -3,23 +3,29 @@ package types
 // etcd key templates or prefixes,
 // pod annotation keys
 const (
-	NSPoolKey = "ipam.harmonycloud.cn/nspool/%s/%s" //ns poolname
+	NS_POOL_Key = "ipam.harmonycloud.cn/nspool/%s/%s" //poolname
 
-	NSPoolKeyPrefix = "ipam.harmonycloud.cn/nspool"
+	NS_POOL_Key_Prefix = "ipam.harmonycloud.cn/nspool"
 
-	ServiccePoolKey = "ipam.harmonycloud.cn/svcpool/%s/%s" //ns poolname
+	Servicce_Pool_Key = "ipam.harmonycloud.cn/svcpool/%s/%s" //poolname
 
-	ServiccePoolKeyPrefix = "ipam.harmonycloud.cn/svcpool"
+	Servicce_Pool_Key_Prefix = "ipam.harmonycloud.cn/svcpool"
 
-	PodKey = "ipam.harmonycloud.cn/pod/%s/%s" //ns podname
+	Pod_Key = "ipam.harmonycloud.cn/pod/%s/%s" //ns podname
 
-	PodKeyPrefix = "ipam.harmonycloud.cn/pod/"
+	Pod_Key_Prefix = "ipam.harmonycloud.cn/pod/"
 
-	PodIPFixedAnno = "hcipm_ip_fixed"
+	defaultIpPool = "default_ippool"
 
-	PodIPAnno = "hcipam_ip"
+	POD_IP_FIXED = "hcipm_ip_fixed"
 
-	PodIPPoolAnno = "hcipam_ns_ippool"
+	POD_IP_ANNOTAION = "hcipam_ip"
 
-	ServiceIPPoolAnno = "hcipam_service_ippool"
+	POD_IP_POOL = "hcipam_ns_ippool"
+
+	SERVICE_IP_POOL = "hcipam_service_ippool"
+
+	Service_Key_Prefix = "hcipam_service"
+
+	Service_Key = "ipam.harmonycloud.cn/hcipam_service/%s/%s"
 )

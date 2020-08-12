@@ -40,7 +40,7 @@ func (kc *Client) IsPodFixedIP(podNamespace string, podName string) bool {
 		log.Kube.Errorf("failed to get pod: %v", err)
 		return false
 	}
-	value, ok := pod.Annotations[types.PodIPFixedAnno]
+	value, ok := pod.Annotations[types.POD_IP_FIXED]
 	if ok && pod.OwnerReferences != nil {
 		reference := pod.OwnerReferences[0]
 		isStatefulSet := reference.Kind == "StatefulSet"

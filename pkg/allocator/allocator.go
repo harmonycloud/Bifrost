@@ -15,6 +15,7 @@
 package allocator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/containernetworking/cni/pkg/types/current"
@@ -24,6 +25,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/clientv3/concurrency"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -69,7 +71,7 @@ func (alloc *IPAllocator) Release(nameSpace, podName string, releaseFixed bool) 
 	e := alloc.etcdClient
 
 	response, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
-		podNetworkKey := fmt.Sprintf(types.PodKey, nameSpace, podName)
+		podNetworkKey := fmt.Sprintf(types.Pod_Key, nameSpace, podName)
 		podNetworkStr := s.Get(podNetworkKey)
 		if podNetworkStr == "" {
 			log.Alloc.Errorf("pod  %s,%s is not exist !!!", nameSpace, podName)
@@ -96,7 +98,7 @@ func (alloc *IPAllocator) Release(nameSpace, podName string, releaseFixed bool) 
 
 		var nsPoolName string
 		if podNetwork.SvcIPPoolName != "" {
-			servicePoolKey := fmt.Sprintf(types.ServiccePoolKey, nameSpace, podNetwork.SvcIPPoolName)
+			servicePoolKey := fmt.Sprintf(types.Servicce_Pool_Key, nameSpace, podNetwork.SvcIPPoolName)
 			str := s.Get(servicePoolKey)
 			serviceIPPool := &types.ServiceIPPool{}
 			err := json.Unmarshal([]byte(str), serviceIPPool)
@@ -116,7 +118,7 @@ func (alloc *IPAllocator) Release(nameSpace, podName string, releaseFixed bool) 
 			return nil
 		}
 		if nsPoolName != "" {
-			hcPoolKey := fmt.Sprintf(types.NSPoolKey, nameSpace, nsPoolName)
+			hcPoolKey := fmt.Sprintf(types.NS_POOL_Key, nameSpace, nsPoolName)
 			hcPoolStr := s.Get(hcPoolKey)
 			hcPool := &types.NSIPPool{}
 			err := json.Unmarshal([]byte(hcPoolStr), hcPool)
@@ -142,7 +144,7 @@ func (alloc *IPAllocator) Release(nameSpace, podName string, releaseFixed bool) 
 			if err != nil {
 				return fmt.Errorf("hcPoolS  marshal err %v", err)
 			}
-			s.Put(fmt.Sprintf(types.NSPoolKey, nameSpace, hcPool.Name), string(hcPoolStrBytes))
+			s.Put(fmt.Sprintf(types.NS_POOL_Key, nameSpace, hcPool.Name), string(hcPoolStrBytes))
 		}
 		s.Del(podNetworkKey)
 		return nil
@@ -161,13 +163,13 @@ func (alloc *IPAllocator) getServiceSpecIP(fixed bool, nameSpace, servicePoolNam
 	var hcPool *types.NSIPPool
 	var result *net.IP
 	response, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
-		podIPKey := fmt.Sprintf(types.PodKey, nameSpace, podName)
+		podIPKey := fmt.Sprintf(types.Pod_Key, nameSpace, podName)
 		podInfoStr := s.Get(podIPKey)
 		if !fixed && podInfoStr != "" {
 			return fmt.Errorf("pod %s already assain ip %v", podName, podInfoStr)
 
 		}
-		servicePoolKey := fmt.Sprintf(types.ServiccePoolKey, nameSpace, servicePoolName)
+		servicePoolKey := fmt.Sprintf(types.Servicce_Pool_Key, nameSpace, servicePoolName)
 		str := s.Get(servicePoolKey)
 		serviceIPPool := &types.ServiceIPPool{}
 		err := json.Unmarshal([]byte(str), serviceIPPool)
@@ -200,7 +202,7 @@ func (alloc *IPAllocator) getServiceSpecIP(fixed bool, nameSpace, servicePoolNam
 				ipAddr = serviceIPPool.Start
 			}
 		}
-		nsPoolKey := fmt.Sprintf(types.NSPoolKey, nameSpace, serviceIPPool.NSIPPoolName)
+		nsPoolKey := fmt.Sprintf(types.NS_POOL_Key, nameSpace, serviceIPPool.NSIPPoolName)
 		nsPoolStr := s.Get(nsPoolKey)
 		// If the ip is used, check next ip
 		hcPool = &types.NSIPPool{}
@@ -311,4 +313,88 @@ func (alloc *IPAllocator) reuseFixedIP(podInfoStr string, pool *types.ServiceIPP
 	}
 
 	return false, nil, ""
+}
+func (alloc *IPAllocator) GetIPWithoutSvcPoolPolicy(nameSpace, nsIpPoolNames, podName string) (*current.IPConfig, *types.NSIPPool, error) {
+
+	for _, poolName := range strings.Split(nsIpPoolNames, ",") {
+		ifconfig, nspool, err := alloc.getIPFromNSPool(nameSpace, poolName, podName)
+		if err == nil && ifconfig != nil {
+			return ifconfig, nspool, err
+		}
+	}
+	return nil, nil, fmt.Errorf("nspool no ip left")
+
+}
+
+func (alloc *IPAllocator) getIPFromNSPool(nameSpace, poolName, podName string) (*current.IPConfig, *types.NSIPPool, error) {
+	var nsIPPool *types.NSIPPool
+	var result *net.IP = nil
+	podIPKey := fmt.Sprintf(types.Pod_Key, nameSpace, podName)
+
+	exchange := func(stm concurrency.STM) error {
+		podInfoStr := stm.Get(podIPKey)
+
+		if podInfoStr != "" {
+			return fmt.Errorf("pod %s already assain ip %s", podName, podInfoStr)
+		}
+		nsIpPoolKey := fmt.Sprintf(types.NS_POOL_Key, nameSpace, poolName)
+		nsIpPoolStr := stm.Get(nsIpPoolKey)
+		//nsIPPool := &types.NSIPPool{}
+		err := json.Unmarshal([]byte(nsIpPoolStr), &nsIPPool)
+		if err != nil {
+			return fmt.Errorf("unmarshal %s to nsIPPool err %v", nsIpPoolStr, err)
+		}
+		var cursorIp = nsIPPool.Start
+
+		for ip.Cmp(cursorIp, nsIPPool.End) <= 0 {
+			if nsIPPool.PodMap[cursorIp.String()].PodIP != nil && !nsIPPool.PodMap[cursorIp.String()].FixedIP {
+				//clear leak pod
+				tempPodNetworkKey := fmt.Sprintf(types.Pod_Key, nameSpace, nsIPPool.PodMap[cursorIp.String()].PodName)
+				tempPpodNetworkStr := stm.Get(tempPodNetworkKey)
+				//clear pod
+				if tempPpodNetworkStr == "" {
+					log.Alloc.Infof("clear pod podip %s,podname  %s", cursorIp.String(), nsIPPool.PodMap[cursorIp.String()].PodName)
+					delete(nsIPPool.PodMap, cursorIp.String())
+				}
+			} else {
+				podNetwork := nsIPPool.PodMap[cursorIp.String()]
+				podNetwork.Namespace = nameSpace
+				podNetwork.PodName = podName
+				podNetwork.PodIP = cursorIp
+				podNetwork.NsPoolName = poolName
+				podNetwork.ModifyTime = time.Now()
+				podNetworkStr, err := json.Marshal(podNetwork)
+				if err != nil {
+					return fmt.Errorf("podnetwork  marshal err %v", err)
+				}
+				nsIPPool.PodMap[cursorIp.String()] = podNetwork
+				nsIPPool.Used++
+				hcPoolStr, err := json.Marshal(nsIPPool)
+				stm.Put(nsIpPoolKey, string(hcPoolStr))
+				stm.Put(podIPKey, string(podNetworkStr))
+				result = &cursorIp
+				return nil
+			}
+			cursorIp = ip.NextIP(cursorIp)
+		}
+
+		return fmt.Errorf("nspool no ip left")
+	}
+
+	response, err := concurrency.NewSTMRepeatable(context.TODO(), alloc.etcdClient, exchange)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if response.Succeeded {
+		reservedIP := &net.IPNet{IP: *result, Mask: nsIPPool.Subnet.Mask}
+		ipconfig := &current.IPConfig{
+			Version: "4",
+			Address: *reservedIP,
+		}
+		return ipconfig, nsIPPool, nil
+	} else {
+		return nil, nil, fmt.Errorf("unknown err")
+	}
 }

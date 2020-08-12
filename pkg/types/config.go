@@ -65,7 +65,7 @@ type NSIPPool struct {
 
 	CIDR types.IPNet `json:"cidr,omitempty"`
 
-	VlanID int `json:"vlanid,omitempty"`
+	VlanId int `json:"vlanid,omitempty"`
 
 	Namespace string `json:"namespace"`
 
@@ -85,6 +85,7 @@ type PodNetwork struct {
 	StsDeleted    bool      `json:"stsDeleted,omitempty"`
 	FixedIP       bool      `json:"fixedIP,omitempty"`
 	ModifyTime    time.Time `json:"modifyTime,omitempty"`
+	NsPoolName    string    `json:"NsPoolName,omitempty"`
 }
 
 // ServiceIPPool is a IPPool for a certain service
@@ -100,6 +101,11 @@ type ServiceIPPool struct {
 	NSIPPoolName   string `json:"nsIPPoolName"`
 	Deleted        bool   `json:"deleted,omitempty"`
 	LastAssignedIP net.IP `json:"lastAssignedIP,omitempty"`
+}
+
+type IPAMEnvArgs struct {
+	types.CommonArgs
+	IP net.IP `json:"ip,omitempty"`
 }
 
 // LoadIPAMConfig loads a IPAMConfig from byte slice.
