@@ -49,6 +49,7 @@ type IPAMConfig struct {
 	EtcdUsername   string `json:"etcd_username"`
 	EtcdPassword   string `json:"etcd_password"`
 	Cronjob        string `json:"cronjob"`
+	ClusterIPCIDR  string `json:"clusterip_cidr"`
 }
 
 // NSIPPool is a IPPool in a certain namespace

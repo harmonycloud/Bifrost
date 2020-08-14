@@ -27,7 +27,7 @@ func (client *IPPoolClient) CreateIPPool(pool *hcipamTypes.NSIPPool) error {
 	podMAP := make(map[string]hcipamTypes.PodNetwork)
 	pool.PodMap = podMAP
 	pool.Total = utils.GetTotal(*pool)
-	hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, pool.Namespace, pool.Name)
+	hcPoolKey := fmt.Sprintf(hcipamTypes.NS_POOL_Key, pool.Namespace, pool.Name)
 	hcPoolStr, err := json.Marshal(pool)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func (client *IPPoolClient) CreateIPPool(pool *hcipamTypes.NSIPPool) error {
 
 // GetIPPoolByName calls GetKV to get ns IPPool info from given namespace name and IPPool name
 func (client *IPPoolClient) GetIPPoolByName(nsname, poolName string) *hcipamTypes.NSIPPool {
-	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.NSPoolKey, nsname, poolName))
+	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.NS_POOL_Key, nsname, poolName))
 	if str == "" {
 		log.IPPool.Warnf("can not find ip pool %s", poolName)
 		return nil
@@ -57,7 +57,7 @@ func (client *IPPoolClient) GetIPPoolByName(nsname, poolName string) *hcipamType
 // GetNSAllPool calls GetList to get all nsIPPools in the given namespace
 func (client *IPPoolClient) GetNSAllPool(namespace string) []*hcipamTypes.NSIPPool {
 	var pooList []*hcipamTypes.NSIPPool
-	strList := etcdcli.GetList(fmt.Sprintf(hcipamTypes.NSPoolKey, namespace, ""))
+	strList := etcdcli.GetList(fmt.Sprintf(hcipamTypes.NS_POOL_Key, namespace, ""))
 	for _, str := range strList {
 		if str == "" {
 			log.IPPool.Error("empty str to unmarshal")
@@ -76,7 +76,7 @@ func (client *IPPoolClient) GetNSAllPool(namespace string) []*hcipamTypes.NSIPPo
 
 // GetServicePool calls GetKV to get service IPPool from the given namespace and service IPPool name
 func (client *IPPoolClient) GetServicePool(namespace string, ServicePoolName string) (*hcipamTypes.ServiceIPPool, error) {
-	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.ServiccePoolKey, namespace, ServicePoolName))
+	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, namespace, ServicePoolName))
 	if str == "" {
 		return nil, fmt.Errorf("can not find ServiceIPPool %s  : %s", namespace, ServicePoolName)
 	}
@@ -93,7 +93,7 @@ func (client *IPPoolClient) GetServicePool(namespace string, ServicePoolName str
 // GetAllPool calls GetList to get all ns IPPools
 func (client *IPPoolClient) GetAllPool() []*hcipamTypes.NSIPPool {
 	var pooList []*hcipamTypes.NSIPPool
-	strList := etcdcli.GetList(hcipamTypes.NSPoolKeyPrefix)
+	strList := etcdcli.GetList(hcipamTypes.NS_POOL_Key_Prefix)
 	for _, str := range strList {
 		if str == "" {
 			log.IPPool.Error("empty str to unmarshal")
@@ -114,7 +114,7 @@ func (client *IPPoolClient) GetAllPool() []*hcipamTypes.NSIPPool {
 func (client *IPPoolClient) Delete(pool *hcipamTypes.NSIPPool) error {
 	e := client.Cli
 	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
-		hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, pool.Namespace, pool.Name)
+		hcPoolKey := fmt.Sprintf(hcipamTypes.NS_POOL_Key, pool.Namespace, pool.Name)
 		s.Del(hcPoolKey)
 		return nil
 	})
@@ -129,7 +129,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 	e := client.Cli
 
 	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
-		hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, serviceIPPool.Namespace, serviceIPPool.NSIPPoolName)
+		hcPoolKey := fmt.Sprintf(hcipamTypes.NS_POOL_Key, serviceIPPool.Namespace, serviceIPPool.NSIPPoolName)
 		hcPoolStr := s.Get(hcPoolKey)
 		nsPool := &hcipamTypes.NSIPPool{}
 		err := json.Unmarshal([]byte(hcPoolStr), nsPool)
@@ -182,7 +182,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 		if err != nil {
 			return fmt.Errorf("hcPoolS  marshal err %v", err)
 		}
-		s.Put(fmt.Sprintf(hcipamTypes.NSPoolKey, nsPool.Namespace, nsPool.Name), string(hcPoolStrByte))
+		s.Put(fmt.Sprintf(hcipamTypes.NS_POOL_Key, nsPool.Namespace, nsPool.Name), string(hcPoolStrByte))
 
 		//service ippool
 		serviceIPPool.Total = serviceIPTotal
@@ -192,7 +192,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 		if err != nil {
 			return err
 		}
-		key := fmt.Sprintf(hcipamTypes.ServiccePoolKey, serviceIPPool.Namespace, serviceIPPool.Name)
+		key := fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, serviceIPPool.Namespace, serviceIPPool.Name)
 		s.Put(key, string(str))
 		succeed = true
 		return nil
@@ -211,7 +211,7 @@ func (client *IPPoolClient) CreateServiceIPPool(serviceIPPool *hcipamTypes.Servi
 func (client *IPPoolClient) DeleteServiceIPPool(namespace string, servicePoolName string) error {
 	e := client.Cli
 	_, err := concurrency.NewSTM(e, func(s concurrency.STM) error {
-		servicePoolKey := fmt.Sprintf(hcipamTypes.ServiccePoolKey, namespace, servicePoolName)
+		servicePoolKey := fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, namespace, servicePoolName)
 		svcPoolStr := s.Get(servicePoolKey)
 		serviceIPPool := &hcipamTypes.ServiceIPPool{}
 		err := json.Unmarshal([]byte(svcPoolStr), serviceIPPool)
@@ -219,7 +219,7 @@ func (client *IPPoolClient) DeleteServiceIPPool(namespace string, servicePoolNam
 			return fmt.Errorf("unmarshal %s to svcPool err %v ", svcPoolStr, err)
 		}
 
-		hcPoolKey := fmt.Sprintf(hcipamTypes.NSPoolKey, namespace, serviceIPPool.NSIPPoolName)
+		hcPoolKey := fmt.Sprintf(hcipamTypes.NS_POOL_Key, namespace, serviceIPPool.NSIPPoolName)
 		hcPoolStr := s.Get(hcPoolKey)
 		nsPool := &hcipamTypes.NSIPPool{}
 		err = json.Unmarshal([]byte(hcPoolStr), nsPool)
@@ -253,11 +253,11 @@ func (client *IPPoolClient) DeleteServiceIPPool(namespace string, servicePoolNam
 		if err != nil {
 			return fmt.Errorf("hcPoolS  marshal err %v", err)
 		}
-		s.Put(fmt.Sprintf(hcipamTypes.NSPoolKey, nsPool.Namespace, nsPool.Name), string(hcPoolStrByte))
+		s.Put(fmt.Sprintf(hcipamTypes.NS_POOL_Key, nsPool.Namespace, nsPool.Name), string(hcPoolStrByte))
 
 		//delete service ippool
 
-		key := fmt.Sprintf(hcipamTypes.ServiccePoolKey, serviceIPPool.Namespace, serviceIPPool.Name)
+		key := fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, serviceIPPool.Namespace, serviceIPPool.Name)
 		s.Del(key)
 
 		return nil

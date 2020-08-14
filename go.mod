@@ -20,6 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/j-keck/arping v1.0.0
 	github.com/jonboulle/clockwork v0.2.0 // indirect
+	github.com/onsi/gomega v1.7.0
 	github.com/prometheus/client_golang v1.7.1 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/satori/go.uuid v1.2.1-0.20180103174451-36e9d2ebbde5

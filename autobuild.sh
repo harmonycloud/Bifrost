@@ -1,2 +1,1 @@
-#!/usr/bin/env bash
-docker build -t harmonycloud/hcbridge:v0.1 .
+docker build -t k8s-deploy/hcmacvlan:v0.4 .

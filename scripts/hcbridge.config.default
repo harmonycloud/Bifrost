@@ -3,10 +3,11 @@
     "name": "mynet",
     "plugins": [
         {
-            "type": "hcbridge",
-             "bridge": "br0",
+            "type": "hcmacvlan",
+             "master": "__INTERFACE_MASTER__"
              "ipam": {
                 "type": "hcipam",
+                "resolvConf": "/etc/resolv.conf",
                 "log_path": "/var/log/hcipam.log",
                 "log_level": "DEBUG",
                 "etcd_endpoints": "__ETCD_ENDPOINTS__",

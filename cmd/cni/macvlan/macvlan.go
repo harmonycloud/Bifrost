@@ -29,6 +29,7 @@ import (
 	"github.com/containernetworking/plugins/pkg/utils/sysctl"
 	"github.com/harmonycloud/bifrost/pkg/cniextend"
 	"github.com/harmonycloud/bifrost/pkg/conf"
+	hcipamtypes "github.com/harmonycloud/bifrost/pkg/types"
 	"github.com/harmonycloud/bifrost/pkg/utils"
 	"github.com/harmonycloud/bifrost/pkg/vlan"
 	"github.com/j-keck/arping"
@@ -154,6 +155,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 	if err != nil {
 		return fmt.Errorf("failed to open netns %q: %v", netns, err)
 	}
+
 	defer netns.Close()
 	//调用IPAM前置
 
@@ -228,6 +230,14 @@ func cmdAdd(args *skel.CmdArgs) error {
 		return err
 	}
 
+	_, ipamConf, _, err := hcipamtypes.LoadIPAMConfig(args.StdinData, args.Args)
+	if err != nil {
+		return err
+	}
+	_, _, err = utils.DoNetworking(args, *ipamConf, result, "")
+	if err != nil {
+		return err
+	}
 	result.DNS = netconf.DNS
 
 	return types.PrintResult(result, cniVersion)

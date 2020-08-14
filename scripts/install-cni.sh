@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Script to install hcbridge on a Kubernetes host.
+# Script to install hcmacvlan on a Kubernetes host.
 # - Expects the host CNI binary path to be mounted at /host/opt/cni/bin.
 # - Expects the host CNI network config path to be mounted at /host/etc/cni/net.d.
 
@@ -19,9 +19,9 @@ exit_with_error(){
   echo $1
   exit 1
 }
+INTERFACE_MASTER=$1
 
-
-# Hcipam & hcbridge binary path
+# Hcipam & hcmacvlan binary path
 path=/
 # Default config path
 confpath=/
@@ -36,7 +36,7 @@ ssldir=$confdir/ssl
 
 # Clean up any existing binaries / config / assets.
 rm -f $dir/hcipam
-rm -f $dir/hcbridge
+rm -f $dir/hcmacvlan
 rm -rf $confdir/*
 
 # Create ssl directory
@@ -52,7 +52,7 @@ CNI_CONF_ETCD_KEY=/etc/cni/net.d/ssl/etcd-key
 CNI_CONF_ETCD_CERT=/etc/cni/net.d/ssl/etcd-cert
 
 # Load template config
-TMP_CONF='/hcbridge.config.default'
+TMP_CONF='/hcmacvlan.config.default'
 
 # Load env args
 # Use alternative command character "~", since these include a "/".
@@ -60,15 +60,15 @@ sed -i s~__ETCD_CERT_FILE__~${CNI_CONF_ETCD_CERT:-}~g $TMP_CONF
 sed -i s~__ETCD_KEY_FILE__~${CNI_CONF_ETCD_KEY:-}~g $TMP_CONF
 sed -i s~__ETCD_CA_CERT_FILE__~${CNI_CONF_ETCD_CA:-}~g $TMP_CONF
 sed -i s~__ETCD_ENDPOINTS__~${ETCD_ENDPOINTS:-}~g $TMP_CONF
-
+sed -i s~__INTERFACE_MASTER__~${INTERFACE_MASTER:-}~g $TMP_CONF
 
 # Copy the binary and config
 cp $path/hcipam $dir/hcipam || exit_with_error "Failed to copy $path to $dir. This may be caused by selinux configuration on the host, or something else."
-cp $path/hcbridge $dir/hcbridge || exit_with_error "Failed to copy $path to $dir. This may be caused by selinux configuration on the host, or something else."
+cp $path/hcmacvlan $dir/hcmacvlan || exit_with_error "Failed to copy $path to $dir. This may be caused by selinux configuration on the host, or something else."
 cp $TMP_CONF $confdir/10-my-net-ssl.conflist || exit_with_error "Failed to copy $confpath to $confdir. This may be caused by selinux configuration on the host, or something else."
 
 chmod +x $dir/hcipam
-chmod +x $dir/hcbridge
+chmod +x $dir/hcmacvlan
 
 SERVICE_ACCOUNT_PATH=/var/run/secrets/kubernetes.io/serviceaccount
 KUBE_CA_FILE=${KUBE_CA_FILE:-$SERVICE_ACCOUNT_PATH/ca.crt}
@@ -96,10 +96,10 @@ if [ -f "$SERVICE_ACCOUNT_PATH/token" ]; then
   # to skip TLS verification for now.  We should eventually support
   # writing more complete kubeconfig files. This is only used
   # if the provided CNI network config references it.
-  touch /host/etc/cni/net.d/hcbridge-kubeconfig
-  chmod ${KUBECONFIG_MODE:-600} /host/etc/cni/net.d/hcbridge-kubeconfig
-  cat > /host/etc/cni/net.d/hcbridge-kubeconfig <<EOF
-# Kubeconfig file for hcbridge plugin.
+  touch /host/etc/cni/net.d/hcmacvlan-kubeconfig
+  chmod ${KUBECONFIG_MODE:-600} /host/etc/cni/net.d/hcmacvlan-kubeconfig
+  cat > /host/etc/cni/net.d/hcmacvlan-kubeconfig <<EOF
+# Kubeconfig file for hcmacvlan plugin.
 apiVersion: v1
 kind: Config
 clusters:
@@ -108,15 +108,15 @@ clusters:
     server: ${KUBERNETES_SERVICE_PROTOCOL:-https}://[${KUBERNETES_SERVICE_HOST}]:${KUBERNETES_SERVICE_PORT}
     $TLS_CFG
 users:
-- name: hcbridge
+- name: hcmacvlan
   user:
     token: "${SERVICEACCOUNT_TOKEN}"
 contexts:
-- name: hcbridge-context
+- name: hcmacvlan-context
   context:
     cluster: local
-    user: hcbridge
-current-context: hcbridge-context
+    user: hcmacvlan
+current-context: hcmacvlan-context
 EOF
 
 fi
