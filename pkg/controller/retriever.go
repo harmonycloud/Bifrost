@@ -1,12 +1,8 @@
 package controller
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/harmonycloud/bifrost/pkg/allocator"
 	"github.com/harmonycloud/bifrost/pkg/types"
-	"go.etcd.io/etcd/clientv3"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -16,7 +12,7 @@ import (
 
 // Retriever is used to retriever IP addresses from deleted pods
 type Retriever struct {
-	cli       *clientv3.Client
+	allocator *allocator.IPAllocator
 	Clientset *kubernetes.Clientset
 }
 
@@ -50,7 +46,7 @@ func (r *Retriever) retrieveNormalIP() {
 		klog.Errorf("get normal IP Error %s", err)
 		return
 	}
-	ipAllocator := allocator.NewIPAllocator(r.cli)
+	ipAllocator := r.allocator
 
 	for _, podNetwork := range podNetworkList {
 
@@ -89,24 +85,5 @@ func (r *Retriever) RetrieveFixedIP() {
 }
 
 func (r *Retriever) getPodList() ([]types.PodNetwork, error) {
-	resp, err := r.cli.Get(context.TODO(), types.PodKeyPrefix, clientv3.WithPrefix())
-
-	var keyList []types.PodNetwork
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, v := range resp.Kvs {
-		podNetworkStr := string(v.Value)
-		podNetwork := &types.PodNetwork{}
-		err := json.Unmarshal(v.Value, podNetwork)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal podNetworkStr %s to %v err  %s", podNetworkStr, podNetwork, err)
-		}
-		keyList = append(keyList, *podNetwork)
-	}
-	klog.Infof("podlist len %v", len(keyList))
-	return keyList, nil
-
+	return r.allocator.BackendClient.GetPodList()
 }

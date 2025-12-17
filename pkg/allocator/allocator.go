@@ -34,23 +34,17 @@ type IPAllocator struct {
 var log = bflog.Alloc
 
 // NewIPAllocator returns a new IPAllocator from the given etcd client
-func NewIPAllocator(config *types.IPAMConfig) *IPAllocator {
+func NewIPAllocator(config *types.IPAMConfig) (*IPAllocator, error) {
 
 	if config.DatastoreType == "" {
 		etcdclient, err := etcdcli.Init(config)
 
 		if err != nil {
-			log.Errorf("pool init err is %v", err)
+			return nil, err
 		}
-		defer func() {
-			if err := etcdclient.Client.Close(); err != nil {
-				log.Errorf("close etcd err %v", err)
-			}
-		}()
-
-		return &IPAllocator{BackendClient: etcdclient}
+		return &IPAllocator{BackendClient: etcdclient}, nil
 	} else {
-		return &IPAllocator{}
+		return &IPAllocator{}, nil
 	}
 
 }
@@ -68,8 +62,7 @@ func (alloc *IPAllocator) AllocateSvcSpecified(fixed bool, nameSpace, serviceIPP
 	var err error
 	var nsIPPool *types.NSIPPool
 
-	reservedIPAddress, nsIPPool, err = alloc.BackendClient.GetServiceSpecIP(fixed, nameSpace, serviceIPPoolName, podName, stsName, alloc.etcdClient)
-
+	reservedIPAddress, nsIPPool, err = alloc.BackendClient.GetServiceSpecIP(fixed, nameSpace, serviceIPPoolName, podName, stsName)
 	if err != nil {
 		return nil, nil, err
 	}

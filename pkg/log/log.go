@@ -11,13 +11,14 @@ var log *logrus.Logger
 
 // CmdAdd and so on are different kinds of log entries for different packages
 var (
-	CmdAdd *logrus.Entry
-	CmdDel *logrus.Entry
-	Alloc  *logrus.Entry
-	Etcd   *logrus.Entry
-	IPPool *logrus.Entry
-	Kube   *logrus.Entry
-	Rest   *logrus.Entry
+	CmdAdd     *logrus.Entry
+	CmdDel     *logrus.Entry
+	Alloc      *logrus.Entry
+	Etcd       *logrus.Entry
+	IPPool     *logrus.Entry
+	Kube       *logrus.Entry
+	Rest       *logrus.Entry
+	HttpServer *logrus.Entry
 )
 
 // Init open the log file and start logging
@@ -50,6 +51,7 @@ func Init(logPath, logLevel string) {
 	IPPool = log.WithField("Selector", "IPPOOL")
 	Kube = log.WithField("Selector", "KUBE")
 	Rest = log.WithField("Selector", "REST")
+	HttpServer = log.WithField("Selector", "HTTP_SERVER")
 
 	initRotate(logPath)
 }
