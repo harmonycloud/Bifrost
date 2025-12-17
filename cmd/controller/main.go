@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/harmonycloud/bifrost/pkg/backend"
 
 	"github.com/harmonycloud/bifrost/pkg/controller"
-	"github.com/harmonycloud/bifrost/pkg/etcdcli"
 	"github.com/harmonycloud/bifrost/pkg/ippool"
 	"github.com/harmonycloud/bifrost/pkg/log"
 	"github.com/harmonycloud/bifrost/pkg/types"
@@ -52,8 +52,8 @@ func main() {
 	var cmdLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	ipamConf = getIPAMFromCMD(cmdLine)
 
-	etcdclient, err := etcdcli.Init(ipamConf)
-	defer etcdcli.Close()
+	etcdclient, err := backend.Init(ipamConf)
+	defer backend.Close()
 	config, err := gorest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
@@ -105,8 +105,8 @@ func GetAllIPPool(w rest.ResponseWriter, r *rest.Request) {
 	}
 	lock.Lock()
 	defer lock.Unlock()
-	etcdclient, err := etcdcli.Init(ipamConf)
-	defer etcdcli.Close()
+	etcdclient, err := backend.Init(ipamConf)
+	defer backend.Close()
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	if err != nil {
 		log.Rest.Fatal(err)
@@ -134,8 +134,8 @@ func GetIPPool(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	etcdclient, err := etcdcli.Init(ipamConf)
-	defer etcdcli.Close()
+	etcdclient, err := backend.Init(ipamConf)
+	defer backend.Close()
 	if err != nil {
 		log.Rest.Fatal(err)
 	}
@@ -196,8 +196,8 @@ func CreateIPPool(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	etcdclient, err := etcdcli.Init(ipamConf)
-	defer etcdcli.Close()
+	etcdclient, err := backend.Init(ipamConf)
+	defer backend.Close()
 
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	if err != nil {
@@ -243,8 +243,8 @@ func DeleteIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " poolName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
-	defer etcdcli.Close()
+	etcdclient, err := backend.Init(ipamConf)
+	defer backend.Close()
 
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	if err != nil {

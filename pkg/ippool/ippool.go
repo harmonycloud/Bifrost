@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/containernetworking/plugins/pkg/ip"
-	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/backend"
 	"github.com/harmonycloud/bifrost/pkg/log"
 	hcipamTypes "github.com/harmonycloud/bifrost/pkg/types"
 	"github.com/harmonycloud/bifrost/pkg/utils"
@@ -33,14 +33,14 @@ func (client *IPPoolClient) CreateIPPool(pool *hcipamTypes.NSIPPool) error {
 	if err != nil {
 		return fmt.Errorf("unmarshal %s to hcPool err %v ", hcPoolStr, err)
 	}
-	err = etcdcli.PutKV(hcPoolKey, string(hcPoolStr))
+	err = backend.PutKV(hcPoolKey, string(hcPoolStr))
 	return err
 
 }
 
 // GetIPPoolByName calls GetKV to get ns IPPool info from given namespace name and IPPool name
 func (client *IPPoolClient) GetIPPoolByName(nsname, poolName string) *hcipamTypes.NSIPPool {
-	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.NS_POOL_Key, nsname, poolName))
+	str := backend.GetKV(fmt.Sprintf(hcipamTypes.NS_POOL_Key, nsname, poolName))
 	if str == "" {
 		log.IPPool.Warnf("can not find ip pool %s", poolName)
 		return nil
@@ -57,7 +57,7 @@ func (client *IPPoolClient) GetIPPoolByName(nsname, poolName string) *hcipamType
 // GetNSAllPool calls GetList to get all nsIPPools in the given namespace
 func (client *IPPoolClient) GetNSAllPool(namespace string) []*hcipamTypes.NSIPPool {
 	var pooList []*hcipamTypes.NSIPPool
-	strList := etcdcli.GetList(fmt.Sprintf(hcipamTypes.NS_POOL_Key, namespace, ""))
+	strList := backend.GetList(fmt.Sprintf(hcipamTypes.NS_POOL_Key, namespace, ""))
 	for _, str := range strList {
 		if str == "" {
 			log.IPPool.Error("empty str to unmarshal")
@@ -76,7 +76,7 @@ func (client *IPPoolClient) GetNSAllPool(namespace string) []*hcipamTypes.NSIPPo
 
 // GetServicePool calls GetKV to get service IPPool from the given namespace and service IPPool name
 func (client *IPPoolClient) GetServicePool(namespace string, ServicePoolName string) (*hcipamTypes.ServiceIPPool, error) {
-	str := etcdcli.GetKV(fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, namespace, ServicePoolName))
+	str := backend.GetKV(fmt.Sprintf(hcipamTypes.Servicce_Pool_Key, namespace, ServicePoolName))
 	if str == "" {
 		return nil, fmt.Errorf("can not find ServiceIPPool %s  : %s", namespace, ServicePoolName)
 	}
@@ -93,7 +93,7 @@ func (client *IPPoolClient) GetServicePool(namespace string, ServicePoolName str
 // GetAllPool calls GetList to get all ns IPPools
 func (client *IPPoolClient) GetAllPool() []*hcipamTypes.NSIPPool {
 	var pooList []*hcipamTypes.NSIPPool
-	strList := etcdcli.GetList(hcipamTypes.NS_POOL_Key_Prefix)
+	strList := backend.GetList(hcipamTypes.NS_POOL_Key_Prefix)
 	for _, str := range strList {
 		if str == "" {
 			log.IPPool.Error("empty str to unmarshal")

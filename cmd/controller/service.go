@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/harmonycloud/bifrost/pkg/etcdcli"
+	"github.com/harmonycloud/bifrost/pkg/backend"
 	"github.com/harmonycloud/bifrost/pkg/ippool"
 	"github.com/harmonycloud/bifrost/pkg/types"
 	"log"
@@ -38,9 +38,9 @@ func CreateServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " ServiceName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
+	etcdclient, err := backend.Init(ipamConf)
 	ippClient := ippool.NewIPPoolClient(etcdclient)
-	defer etcdcli.Close()
+	defer backend.Close()
 	hcPool := ippClient.GetIPPoolByName(servicePool.Namespace, servicePool.NSIPPoolName)
 	if hcPool == nil {
 		rest.Error(w, fmt.Sprintf(" can not find ippoolcli %s", servicePool.NSIPPoolName), 400)
@@ -92,13 +92,13 @@ func GetServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " servicePoolName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
+	etcdclient, err := backend.Init(ipamConf)
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	if err != nil {
 		rest.Error(w, fmt.Sprintf("system err %v", err), 500)
 		return
 	}
-	defer etcdcli.Close()
+	defer backend.Close()
 	servicePool, err := ippClient.GetServicePool(namespace, servicePoolName)
 	if err != nil {
 		rest.Error(w, fmt.Sprintf("GetServicePool err %v", err), 400)
@@ -126,7 +126,7 @@ func DeleteServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " servicePoolName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
+	etcdclient, err := backend.Init(ipamConf)
 	ippClient := ippool.NewIPPoolClient(etcdclient)
 	if err != nil {
 		rest.Error(w, fmt.Sprintf("system err %v", err), 500)
