@@ -1,18 +1,18 @@
-package main
+package controller
 
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/harmonycloud/bifrost/pkg/etcdcli"
-	"github.com/harmonycloud/bifrost/pkg/ippool"
 	"github.com/harmonycloud/bifrost/pkg/types"
-	"log"
 	"net"
 	"net/http"
 )
 
-// CreateServiceIPPool parses the input config and create a new serviceIPPool in etcd
-func CreateServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
+func (server *HttpServer) CreateMultiServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
+	return
+}
+
+func (server *HttpServer) CreateServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	lock.Lock()
 	defer lock.Unlock()
 	servicePool := &types.ServiceIPPool{}
@@ -38,9 +38,9 @@ func CreateServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " ServiceName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
-	ippClient := ippool.NewIPPoolClient(etcdclient)
-	defer etcdcli.Close()
+
+	ippClient := server.BackendClient
+
 	hcPool := ippClient.GetIPPoolByName(servicePool.Namespace, servicePool.NSIPPoolName)
 	if hcPool == nil {
 		rest.Error(w, fmt.Sprintf(" can not find ippoolcli %s", servicePool.NSIPPoolName), 400)
@@ -77,8 +77,7 @@ func CreateServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-// GetServiceIPPool returns a serviceIPPool by the given name and namespace
-func GetServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
+func (server *HttpServer) GetServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -92,13 +91,8 @@ func GetServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " servicePoolName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
-	ippClient := ippool.NewIPPoolClient(etcdclient)
-	if err != nil {
-		rest.Error(w, fmt.Sprintf("system err %v", err), 500)
-		return
-	}
-	defer etcdcli.Close()
+
+	ippClient := server.BackendClient
 	servicePool, err := ippClient.GetServicePool(namespace, servicePoolName)
 	if err != nil {
 		rest.Error(w, fmt.Sprintf("GetServicePool err %v", err), 400)
@@ -110,9 +104,7 @@ func GetServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 }
-
-// DeleteServiceIPPool deletes a serviceIPPool in etcd by the given name and namespace
-func DeleteServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
+func (server *HttpServer) DeleteServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -126,12 +118,9 @@ func DeleteServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, " servicePoolName required", 400)
 		return
 	}
-	etcdclient, err := etcdcli.Init(ipamConf)
-	ippClient := ippool.NewIPPoolClient(etcdclient)
-	if err != nil {
-		rest.Error(w, fmt.Sprintf("system err %v", err), 500)
-		return
-	}
+
+	ippClient := server.BackendClient
+
 	servicePool, err := ippClient.GetServicePool(namespace, servicePoolName)
 
 	if err != nil {
@@ -147,4 +136,54 @@ func DeleteServiceIPPool(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (server *HttpServer) DeleteService(w rest.ResponseWriter, r *rest.Request) {
+	lock.Lock()
+	defer lock.Unlock()
+	namespace := r.PathParam("namespace")
+	serviceName := r.PathParam("serviceName")
+
+	ippClient := server.BackendClient
+	service := ippClient.GetService(namespace, serviceName)
+
+	for _, v := range service.NsPoolMap {
+
+		for _, svcPool := range v {
+
+			servicePool, err := ippClient.GetServicePool(namespace, svcPool.SvcIPPoolName)
+
+			if err != nil {
+				rest.Error(w, fmt.Sprintf("can not find ippool  %s", svcPool.SvcIPPoolName), 400)
+				return
+			}
+			err = ippClient.DeleteServiceIPPool(namespace, svcPool.SvcIPPoolName)
+			if err != nil {
+				rest.Error(w, fmt.Sprintf("system err %v", err), 500)
+				return
+			}
+			err = w.WriteJson(&servicePool)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
+	//TODO Clear ip leak
+	/*serviceKey := fmt.Sprintf(types.Service_Key, namespace, serviceName)
+	ippClient..DeleteServiceIPPool()*/
+}
+
+func (server *HttpServer) GetService(w rest.ResponseWriter, r *rest.Request) {
+	namespace := r.PathParam("namespace")
+	serviceName := r.PathParam("serviceName")
+
+	ippClient := server.BackendClient
+	service := ippClient.GetService(namespace, serviceName)
+
+	err := w.WriteJson(&service)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

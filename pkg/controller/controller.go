@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"github.com/harmonycloud/bifrost/pkg/allocator"
 	"github.com/robfig/cron"
-	"go.etcd.io/etcd/clientv3"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 )
@@ -17,9 +17,9 @@ func Cronjob(period string, r *Retriever) {
 }
 
 // NewRetriever uses etcd and k8s client to create and return an IP retriever
-func NewRetriever(clientv3 *clientv3.Client, clientset *kubernetes.Clientset) *Retriever {
+func NewRetriever(alloc *allocator.IPAllocator, clientset *kubernetes.Clientset) *Retriever {
 	retriever := &Retriever{
-		cli:       clientv3,
+		allocator: alloc,
 		Clientset: clientset,
 	}
 	return retriever
